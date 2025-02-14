@@ -27,10 +27,12 @@ jobs:
         run: |
           if [ ! -f VERSION ]; then
             echo "1" > VERSION
+            echo "::set-output name=new_version::1"  # Set output for new version
           else
             version=$(cat VERSION)
             new_version=$((version + 1))
             echo "$new_version" > VERSION
+            echo "::set-output name=new_version::$new_version"  # Set output for new version
           fi
 
       - name: Compile code
