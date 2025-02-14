@@ -38,10 +38,11 @@ jobs:
           echo "Compiling code on ${{ runner.os }}..."
 
       - name: Create Release
+        id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v$(cat VERSION)
-          release_name: Release v$(cat VERSION)
+          tag_name: v${{ steps.increment_version.outputs.new_version }}
+          name: Release v${{ steps.increment_version.outputs.new_version }}
           draft: false
           prerelease: false
         env:
