@@ -23,6 +23,7 @@ jobs:
 
       - name: Increment version
         id: increment_version
+        if: matrix.os == 'ubuntu-latest'
         run: |
           if [ ! -f VERSION ]; then
             echo "1" > VERSION
@@ -34,7 +35,6 @@ jobs:
 
       - name: Compile code
         run: |
-          # Add your compilation command here
           echo "Compiling code on ${{ runner.os }}..."
 
       - name: Create Release
