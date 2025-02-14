@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ollama Model Report (OMAR)</title>
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+
+  <body>
+    <main class="container">
+      <h1>Ollama Model Report (OMAR)</h1>
+
+      <div class="toolbar">
+        <button id="refresh-btn">Refresh Models</button>
+        <!-- <button id="find-unused-btn">Find Unused Models</button> -->
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="name">Model Name</th>
+              <th data-sort="last_used">Last Used</th>
+              <th data-sort="usage_count">Usage Count</th>
+              <th data-sort="size">Size</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="model-list">
+            <tr>
+              <td colspan="5" class="loading">Loading model data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal-overlay hidden">
+      <div class="modal">
+        <h2>Confirm Deletion</h2>
+        <p>Are you sure you want to delete <strong id="model-to-delete"></strong>?</p>
+        <div class="modal-buttons">
+          <button class="btn-cancel" id="cancel-delete">Cancel</button>
+          <button class="btn-confirm" id="confirm-delete">Delete</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Increment version
+        id: increment_version
+        run: |
+          if [ ! -f VERSION ]; then
+            echo "1" > VERSION
+          else
+            version=$(cat VERSION)
+            new_version=$((version + 1))
+            echo "$new_version" > VERSION
+          fi
+
+      - name: Compile code
+        run: |
+          # Add your compilation command here
+          echo "Compiling code on ${{ runner.os }}..."
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v$(cat VERSION)
+          release_name: Release v$(cat VERSION)
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

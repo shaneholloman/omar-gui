@@ -1,0 +1,108 @@
+# Ollama Model Report (OMAR) - Project Instructions
+
+## Project Overview
+Create a cross-platform Tauri with Nextjs application that generates usage reports for Ollama models. The application should track when models were last used and their usage frequency by analyzing log files and model manifests. It should also make it easy to select models to delete. The application was originally a CLI tool written in Rust and should be rewritten to be a Tauri app.
+
+## Platform-Specific Details
+
+### Model Directory Locations
+- **macOS**: `~/.ollama/models`
+- **Windows**: `%HOMEPATH%\.ollama`
+- **Linux**: `/usr/share/ollama`
+- Can be overridden using the `OLLAMA_MODELS` environment variable
+
+### Log File Locations
+- **macOS**: `~/.ollama/logs/server*.log`
+- **Windows**: `%LOCALAPPDATA%\Ollama`
+- **Linux**: Access via `journalctl -e -u ollama`
+
+## Implementation Requirements
+
+### 1. Log File Parsing
+- Look for lines starting with "llama_model_loader: loaded meta data"
+- Extract the SHA256 hash from the path, removing the "sha256-" prefix
+- Example log line:
+```
+llama_model_loader: loaded meta data with 35 key-value pairs and 362 tensors from /Users/matt/.ollama/models/blobs/sha256-1a9a388336073f25f143cdd39abe37b306a367d031d6c04a79bbb545232ae113 (version GGUF V3 (latest))
+```
+
+### 2. Timestamp Extraction
+- Look for timestamp lines that precede model loading lines
+- Format: `time=2024-10-29T07:18:20.601-07:00`
+- Record this timestamp with the corresponding SHA256 hash
+
+### 3. Model Manifest Processing
+- Models are organized in: `.ollama/models/manifests/REGISTRY/USER/MODEL/TAG`
+- Components:
+  - REGISTRY: Various Ollama registries
+  - USER: Registry users
+  - MODEL: Model name
+  - TAG: Model version/variant
+
+### 4. Manifest Structure
+Example manifest format:
+```json
+{
+  "schemaVersion": 2,
+  "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+  "config": {
+    "mediaType": "application/vnd.docker.container.image.v1+json",
+    "digest": "sha256:017be051822608223a336d8cb9ecd80f9374f2a68b96e285e636d6e78018a48b",
+    "size": 411
+  },
+  "layers": [
+    {
+      "mediaType": "application/vnd.ollama.image.model",
+      "digest": "sha256:43f7a214e5329f672bb05404cfba1913cbb70fdaa1a17497224e1925046b0ed5",
+      "size": 4431388192
+    },
+    {
+      "mediaType": "application/vnd.ollama.image.template",
+      "digest": "sha256:64631f1262e4e87d47511bb7b405540321afd297f723f88bf72faae19992ddba",
+      "size": 181
+    },
+    {
+      "mediaType": "application/vnd.ollama.image.params",
+      "digest": "sha256:db8fbfd0cb288a053f83ac9014ca9bac2558b1bbcd80b5c408a548e7acba8a24",
+      "size": 18
+    }
+  ]
+}
+```
+
+### 5. Model Name Resolution
+- Find the layer with `mediaType: "application/vnd.ollama.image.model"`
+- Extract the SHA256 hash from its digest
+- Model name format: `USER/MODEL:TAG`
+  - If USER is "library", omit it from the name
+  - Example: For path `~/.ollama/models/manifests/registry.ollama.ai/m/qwen2/7b.q4_0-max`
+    - Model name would be: `m/qwen2:7b.q4_0-max`
+
+### 6. Deleted Model Handling
+- If a SHA256 hash from logs isn't found in any manifest
+- Display first few characters of the hash followed by "-deleted"
+  - Example: `1a9a38...-deleted`
+
+## Required Dependencies
+```toml
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = "0.4"
+glob = "0.3"
+dirs = "5.0"
+anyhow = "1.0"
+```
+
+## Output Requirements
+For each model, display:
+- Model name (or deleted status)
+- Last used timestamp
+- Usage count
+- Model size (where available)
+
+## Cross-Platform Considerations
+- Use platform-specific paths for logs and model directories
+- Handle different log formats across platforms
+- Support the `OLLAMA_MODELS` environment variable override
+- Ensure proper error handling for missing or inaccessible files
