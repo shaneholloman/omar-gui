@@ -4,6 +4,17 @@
 
 This application is designed to help users efficiently manage and prune their models. It provides tools for optimizing model performance and reducing unnecessary complexity. Built with Tauri and TypeScript.
 
+## Technology Choices
+
+While Deno (a modern JavaScript/TypeScript runtime) offers many advantages like built-in TypeScript support, secure-by-default execution, and integrated tooling, this project uses Node.js/npm instead. Here's why:
+
+- Better integration with Tauri's build system and toolchain
+- Larger ecosystem of npm packages and tools
+- More mature tooling and broader community support
+- Established patterns for desktop application development
+
+This choice prioritizes compatibility and ecosystem support over Deno's modern features, ensuring a more stable and maintainable development process.
+
 ## Prerequisites
 
 Before building the application, ensure you have the following installed:
